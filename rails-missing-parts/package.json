@@ -1,0 +1,14 @@
+{
+  "private": true,
+  "scripts": {
+    "dev": "slidev --open --log info",
+    "build": "slidev build",
+    "export": "slidev export"
+  },
+  "dependencies": {
+    "@slidev/cli": "^0.22.1",
+    "@vueuse/motion": "^1.5.6",
+    "slidev-theme-hexlet": "^0.0.3"
+  },
+  "name": "rails-missing-parts"
+}
