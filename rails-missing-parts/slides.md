@@ -390,6 +390,209 @@ end
 ---
 layout: center
 background: center
+class: 'text-center'
 ---
 
 # Зависимости
+
+## Полиморфизм подтипов
+
+---
+layout: center
+background: common
+---
+
+# Внешние системы
+
+<div class="code-text-xl">
+
+```ruby
+# Docker
+image = Docker::Image.create('fromImage' => 'ubuntu:14.04')
+
+# Facebook Ads
+ad_account = FacebookAds::AdAccount.get('id', 'name')
+
+# Consul
+foo_service = Diplomat::Service.get('foo')
+
+# Bash
+BashRunner.start(command) do |output|
+  log << output
+end
+```
+
+</div>
+
+---
+layout: center
+background: center
+---
+
+# Как тестировать?
+
+---
+layout: center
+background: center
+---
+
+# Варианты
+
+<div class="code-text-xl">
+
+```ruby
+# 1. Webmock
+stub_request(:post, 'ads.facebook.com').
+  with(body: 'abc', headers: { 'Content-Length' => 3 })
+
+# 2. Monkey-patching
+class FacebookAds::AdAccount
+  # Правим все что хотим
+end
+
+# 3. if
+if !Rails.env.test?
+  ad_account = FacebookAds::AdAccount.get('id', 'name')
+end
+```
+
+</div>
+
+---
+layout: center
+background: center
+---
+
+# Полиморфизм (подтипов)
+
+* Никакой связи с наследованием
+* В Ruby утиная типизация
+* Реализуется за счет инверсии зависимостей
+
+---
+layout: center
+background: center
+---
+
+# Полиморфная функция
+
+<div class="code-text-xl">
+
+```ruby
+# Например Docker::Service
+def some_function(service)
+  service = client.get('runner')
+  # Тут выполняем нужную логику
+end
+
+# Где-то вызов
+# Может быть как классом так и объектом
+# Зависит от реализации
+some_function(Docker::Service)
+```
+
+</div>
+
+---
+layout: center
+background: center
+---
+
+# Фейк
+
+<div class="code-text-xl">
+
+```ruby
+class DockerApiStub
+  def initialize(url, options); end
+
+  attr_reader :connection
+
+  def containers(all); end
+
+  def run_once(image_name, command); end
+
+  def get_info(_cuid)
+    { 'Id' => 'asdfasd09f87asdfasdfasdf' }
+  end
+end
+```
+
+</div>
+
+---
+layout: center
+background: center
+---
+
+<div class="code-text-xl">
+
+```ruby
+class ApplicationContainer
+  extend Dry::Container::Mixin
+
+  if Rails.env.production?
+    register :active_campaign { ActivecampaignManager.new 'key' }
+    register :sparkpost_client, -> { SimpleSpark::Client.new }
+  else
+    register :active_campaign, -> { ActivecampaignManagerStub.new }
+  end
+
+  if Rails.env.test?
+    register :sparkpost_client, -> { SparkpostClientStub.new }
+    register(:docker_exercise_api_klass, -> { DockerApiStub })
+  else
+    register(:docker_exercise_api_klass, -> { DockerApi })
+  end
+end
+```
+
+</div>
+
+---
+layout: center
+background: center
+---
+
+# Использование
+
+<div class="code-text-xl">
+
+```ruby
+Import = Dry::AutoInject(ApplicationContainer)
+
+class SomeJob < ApplicationJob
+  include Import['sparkpost_client', 'docker_exercise_api_klass']
+
+  def perform(id)
+    # Подготовка
+    sparkpost_client.do_something()
+    docker_exercise_api_klass.foo()
+  end
+end
+```
+
+</div>
+
+---
+layout: center
+background: center
+---
+
+# Куда еще подумать
+
+* Null Object
+* Авторизация
+* Painless Rails
+  * Иерархия контроллеров
+  * Иерархия моделей
+  * Мутаторы вместо колбеков
+  * Сервисный слой (Service Layer)
+
+---
+layout: center
+background: center
+---
+
+# Спасибо
+## twitter.com/mokevnin
