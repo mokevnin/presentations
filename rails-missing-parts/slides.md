@@ -239,6 +239,7 @@ scopes:
 
 ---
 layout: center
+background: center
 ---
 
 # Формы
@@ -248,14 +249,147 @@ layout: center
 
 ---
 layout: center
+background: center
 ---
 
 # Основные задачи
 
 * Массовое присвоение
-* Валидация
 * Нормализация данных
+* Валидация
 
 ---
 layout: center
+background: common
 ---
+
+# Rails
+
+<div class="code-text-xl">
+
+```ruby
+# mass-assigment
+attrs = params.require(:user)
+              .permit(:email, :password, :password_confirmation)
+
+# normalization
+attrs[:email].downcase!
+
+user = User.new attrs
+
+# validation
+if user.save
+  # ...
+end
+```
+
+</div>
+
+---
+layout: center
+background: center
+---
+
+# Уровни валидации
+
+* Проверка корректности данных
+* Ограничения конкретной формы (бизнес правила)
+* Проверка бизнес правил
+* Ограничения хранилища
+
+---
+layout: center
+background: center
+---
+
+# Пароль
+
+* Подтверждение (корректность)
+* Формат (бизнес-правила)
+* Наличие (бизнес-правила по ситуации)
+
+---
+layout: center
+background: common
+---
+
+# Django
+
+<div class="code-text-xl">
+
+```python
+from django.forms import ModelForm
+from hexlet.models import Article
+
+class ArticleForm(ModelForm):
+    headline = forms.CharField(required=True, max_length=100)
+
+    class Meta:
+        model = Article
+        fields = ['pub_date', 'headline', 'content', 'reporter']
+```
+
+</div>
+
+---
+layout: center
+background: common
+---
+
+# Reform
+
+<div class="code-text-xl">
+
+```ruby
+class AlbumForm < Reform::Form
+  property :title
+  validates :title, presence: true
+
+  property :artist do
+    property :full_name
+    validates :full_name, presence: true
+  end
+
+  collection :songs do
+    property :name
+  end
+end
+```
+
+</div>
+
+---
+layout: center
+background: common
+---
+
+# ActiveFormModel
+
+<div class="code-text-xl">
+
+```ruby
+class UserSignUpForm < User
+  include ActiveFormModel
+
+  permit :first_name, :email, :password
+
+  validates :password, presence: true
+
+  def email=(value)
+    if value.present?
+      write_attribute(:email, value.downcase)
+    else
+      super
+    end
+  end
+end
+```
+
+</div>
+
+---
+layout: center
+background: center
+---
+
+# Зависимости
